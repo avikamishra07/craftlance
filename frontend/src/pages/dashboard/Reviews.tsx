@@ -29,7 +29,10 @@ export default function ReviewsDashboard() {
       <div>
         <h1 className="text-2xl font-bold">Reviews</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          {isFreelancer ? 'Reviews you've received from clients.' : 'Reviews you've left for freelancers.'}
+          {isFreelancer
+          ? "Reviews you've received from clients."
+          : "Reviews you've left for freelancers."
+          }
         </p>
       </div>
 
