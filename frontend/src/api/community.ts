@@ -12,14 +12,13 @@ export interface VerifiedSkillPublic {
 
 export interface FreelancerCard {
   id:               string
-  username:         string
-  full_name:        string | null
+  full_name:        string        // always set — required on registration
   avatar_url:       string | null
   title:            string | null
   bio:              string | null
   skills:           string[]
   hourly_rate:      number | null
-  availability:     'full_time' | 'part_time' | 'contract' | null
+  availability:     string | null
   is_verified:      boolean
   reputation_score: number | null
   completed_jobs:   number

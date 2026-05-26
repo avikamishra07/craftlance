@@ -14,8 +14,7 @@ class VerifiedSkillPublic(BaseModel):
 
 class FreelancerCard(BaseModel):
     id:               str
-    username:         str
-    full_name:        Optional[str]
+    full_name:        str            # required — always set on registration
     avatar_url:       Optional[str]
     title:            Optional[str]
     bio:              Optional[str]
@@ -28,8 +27,7 @@ class FreelancerCard(BaseModel):
     verified_skills:  list[VerifiedSkillPublic]
     is_saved:         bool
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class FreelancerDirectoryResponse(BaseModel):

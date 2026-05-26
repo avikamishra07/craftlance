@@ -7,7 +7,6 @@ from app.models.proposal import Proposal
 from app.models.contract import Contract
 from app.models.payment import Payment
 from app.models.review import Review
-from app.models.reputation import Reputation
 from app.models.community import SavedFreelancer
 
 __all__ = [
@@ -23,6 +22,5 @@ __all__ = [
     "Contract",
     "Payment",
     "Review",
-    "Reputation",
     "SavedFreelancer",
 ]

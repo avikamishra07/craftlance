@@ -3,12 +3,32 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.core.config import settings
+from app.core.database import Base, engine
+
+# ── Model imports ─────────────────────────────────────────────────────────────
+from app.models.user import User
+from app.models.portfolio import PortfolioItem
+from app.models.skill_verification import SkillVerification
+from app.models.notification import Notification
+from app.models.project import Project
+from app.models.proposal import Proposal
+from app.models.contract import Contract
+from app.models.milestone import Milestone
+from app.models.message import Message
+from app.models.payment import Payment
+from app.models.review import Review
+from app.models.community import SavedFreelancer
+
+# ── Route imports ─────────────────────────────────────────────────────────────
 from app.api.routes import auth, users, portfolio, skills, projects, proposals, contracts
-from app.api.routes import payments           # M5
-from app.api.routes import reviews            # M6
-from app.api.routes import ai                 # M7
+from app.api.routes import payments             # M5
+from app.api.routes import reviews              # M6
+from app.api.routes import ai                   # M7
 from app.api.routes import skills_verification  # M8
-from app.api.routes import community          # M9
+from app.api.routes import community            # M9
+from app.api.routes import proposals_patch      # M9 patch — ERROR 10 FIX
+
+Base.metadata.create_all(bind=engine)
 
 
 @asynccontextmanager
@@ -37,12 +57,13 @@ app.include_router(portfolio.router,            prefix="/api/v1")
 app.include_router(skills.router,               prefix="/api/v1")
 app.include_router(projects.router,             prefix="/api/v1")
 app.include_router(proposals.router,            prefix="/api/v1")
-app.include_router(contracts.router,            prefix="/api/v1")   # M4
-app.include_router(payments.router,             prefix="/api/v1")   # M5
-app.include_router(reviews.router,              prefix="/api/v1")   # M6
-app.include_router(ai.router,                   prefix="/api/v1")   # M7
-app.include_router(skills_verification.router,  prefix="/api/v1")   # M8
-app.include_router(community.router,            prefix="/api/v1")   # M9
+app.include_router(proposals_patch.router,      prefix="/api/v1")  # ERROR 10 FIX
+app.include_router(contracts.router,            prefix="/api/v1")  # M4
+app.include_router(payments.router,             prefix="/api/v1")  # M5
+app.include_router(reviews.router,              prefix="/api/v1")  # M6
+app.include_router(ai.router,                   prefix="/api/v1")  # M7
+app.include_router(skills_verification.router,  prefix="/api/v1")  # M8
+app.include_router(community.router,            prefix="/api/v1")  # M9
 
 
 @app.get("/health")

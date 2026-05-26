@@ -11,13 +11,12 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import or_, and_, func, desc
+from sqlalchemy import or_, func, desc
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.api.deps import get_current_user
-from app.models.user import User
-from app.models.reputation import Reputation          # M6
+from app.models.user import User, UserRole
 from app.models.skill_verification import SkillVerification  # M8
 from app.models.community import SavedFreelancer
 from app.schemas.community import (
@@ -55,7 +54,9 @@ def _best_badge_per_skill(
 
 
 def _build_card(user: User, db: Session, saved_ids: set) -> FreelancerCard:
-    rep = db.query(Reputation).filter(Reputation.user_id == user.id).first()
+    # ERROR 4 FIX: Reputation is not a separate model — reputation data lives
+    # directly on the User row (reputation_score, total_projects, etc.).
+    # Removed db.query(Reputation) which caused NameError on every request.
     verifications = (
         db.query(SkillVerification)
         .filter(SkillVerification.user_id == user.id, SkillVerification.badge_level.isnot(None))
@@ -63,17 +64,17 @@ def _build_card(user: User, db: Session, saved_ids: set) -> FreelancerCard:
     )
     return FreelancerCard(
         id=str(user.id),
-        username=user.username,
+
         full_name=user.full_name,
-        avatar_url=getattr(user, "avatar_url", None),
-        title=getattr(user, "title", None),
-        bio=getattr(user, "bio", None),
-        skills=getattr(user, "skills", []) or [],
-        hourly_rate=getattr(user, "hourly_rate", None),
-        availability=getattr(user, "availability", None),
-        is_verified=getattr(user, "is_verified", False),
-        reputation_score=rep.score if rep else None,
-        completed_jobs=rep.completed_jobs if rep else 0,
+        avatar_url=user.avatar_url,
+        title=user.title,
+        bio=user.bio,
+        skills=user.skills or [],
+        hourly_rate=user.hourly_rate,
+        availability=user.availability,
+        is_verified=user.is_verified,
+        reputation_score=user.reputation_score,   # read directly from User
+        completed_jobs=user.total_projects,        # read directly from User
         verified_skills=_best_badge_per_skill(verifications),
         is_saved=str(user.id) in saved_ids,
     )
@@ -89,8 +90,8 @@ def list_freelancers(
     skills:          Optional[str]   = Query(None,  description="Comma-separated skill tags"),
     min_rate:        Optional[float] = Query(None,  ge=0),
     max_rate:        Optional[float] = Query(None,  ge=0),
-    availability:    Optional[str]   = Query(None,  description="full_time|part_time|contract"),
-    min_reputation:  Optional[float] = Query(None,  ge=0, le=5),
+    availability:    Optional[str]   = Query(None,  description="available|busy|not_available"),
+    min_reputation:  Optional[float] = Query(None,  ge=0, le=100),
     verified_only:   bool            = Query(False),
     # pagination
     page:            int             = Query(1,  ge=1),
@@ -99,7 +100,10 @@ def list_freelancers(
     current_user:    User            = Depends(get_current_user),
 ):
     """Browse all freelancers with search and filter."""
-    q_obj = db.query(User).filter(User.role == "freelancer")
+    q_obj = db.query(User).filter(
+        User.role.in_([UserRole.freelancer, UserRole.both]),
+        User.is_active == True,
+    )
 
     # free-text search across name / title / bio
     if q:
@@ -109,25 +113,14 @@ def list_freelancers(
                 User.full_name.ilike(term),
                 User.title.ilike(term),
                 User.bio.ilike(term),
-                User.username.ilike(term),
             )
         )
 
-    # skill filter — stored as ARRAY or JSON column; handle both
+    # skill filter — User.skills is a PostgreSQL ARRAY(String)
     if skills:
-        skill_list = [s.strip().lower() for s in skills.split(",") if s.strip()]
+        skill_list = [s.strip() for s in skills.split(",") if s.strip()]
         for skill in skill_list:
-            # works for PostgreSQL ARRAY columns (User.skills is ARRAY(String))
-            q_obj = q_obj.filter(
-                func.lower(func.cast(User.skills, db.bind.dialect.name == "postgresql"
-                    and __import__("sqlalchemy.dialects.postgresql", fromlist=["ARRAY"]).ARRAY
-                    or __import__("sqlalchemy", fromlist=["String"]).String
-                )).contains(skill)
-                if False  # placeholder; real version below
-                else User.skills.any(func.lower(User.skills) == skill)
-                if hasattr(User.skills.property, "uselist")
-                else User.skills.ilike(f"%{skill}%")
-            )
+            q_obj = q_obj.filter(User.skills.any(skill))
 
     # rate filters
     if min_rate is not None:
@@ -143,16 +136,14 @@ def list_freelancers(
     if verified_only:
         q_obj = q_obj.filter(User.is_verified == True)
 
-    # reputation join for min_reputation filter
+    # ERROR 4 FIX: reputation filter now uses User.reputation_score directly —
+    # no join needed, no Reputation model needed.
     if min_reputation is not None:
-        q_obj = (
-            q_obj.join(Reputation, Reputation.user_id == User.id, isouter=True)
-            .filter(Reputation.score >= min_reputation)
-        )
+        q_obj = q_obj.filter(User.reputation_score >= min_reputation)
 
     total = q_obj.count()
     users = (
-        q_obj.order_by(desc(User.created_at))
+        q_obj.order_by(desc(User.reputation_score))
         .offset((page - 1) * per_page)
         .limit(per_page)
         .all()

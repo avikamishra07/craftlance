@@ -50,12 +50,12 @@ export function FreelancerCard({ freelancer, onToggleSave, saving }: FreelancerC
           {f.avatar_url ? (
             <img
               src={f.avatar_url}
-              alt={f.full_name ?? f.username}
+              alt={f.full_name}
               className="w-12 h-12 rounded-full object-cover ring-2 ring-white/10"
             />
           ) : (
             <div className="w-12 h-12 rounded-full bg-brand-500/20 flex items-center justify-center text-brand-300 font-bold text-lg">
-              {(f.full_name ?? f.username).charAt(0).toUpperCase()}
+              {f.full_name.charAt(0).toUpperCase()}
             </div>
           )}
         </Link>
@@ -68,7 +68,7 @@ export function FreelancerCard({ freelancer, onToggleSave, saving }: FreelancerC
                 to={`/profile/${f.id}`}
                 className="font-semibold text-sm hover:text-brand-300 transition-colors line-clamp-1"
               >
-                {f.full_name ?? f.username}
+                {f.full_name}
               </Link>
               {f.title && (
                 <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{f.title}</p>
