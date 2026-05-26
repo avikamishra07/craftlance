@@ -4,6 +4,10 @@
  */
 import { api } from './client'
 
+// Mirrors backend AvailabilityStatus enum exactly:
+//   available | busy | not_available
+export type AvailabilityStatus = 'available' | 'busy' | 'not_available'
+
 export interface VerifiedSkillPublic {
   skill_key:   string
   skill_label: string
@@ -12,13 +16,13 @@ export interface VerifiedSkillPublic {
 
 export interface FreelancerCard {
   id:               string
-  full_name:        string        // always set — required on registration
+  full_name:        string
   avatar_url:       string | null
   title:            string | null
   bio:              string | null
   skills:           string[]
   hourly_rate:      number | null
-  availability:     string | null
+  availability:     AvailabilityStatus | null   // FIX: was `string | null`
   is_verified:      boolean
   reputation_score: number | null
   completed_jobs:   number
@@ -40,29 +44,29 @@ export interface SavedFreelancersResponse {
 }
 
 export interface FreelancerFilters {
-  q?:             string
-  skills?:        string         // comma-separated
-  min_rate?:      number
-  max_rate?:      number
-  availability?:  string
+  q?:              string
+  skills?:         string             // comma-separated
+  min_rate?:       number
+  max_rate?:       number
+  availability?:   AvailabilityStatus // FIX: was `string`
   min_reputation?: number
-  verified_only?: boolean
-  page?:          number
-  per_page?:      number
+  verified_only?:  boolean
+  page?:           number
+  per_page?:       number
 }
 
 export const communityApi = {
   listFreelancers: (filters: FreelancerFilters = {}): Promise<FreelancerDirectoryResponse> => {
     const params: Record<string, string | number | boolean> = {}
-    if (filters.q)             params.q             = filters.q
-    if (filters.skills)        params.skills        = filters.skills
-    if (filters.min_rate != null)  params.min_rate  = filters.min_rate
-    if (filters.max_rate != null)  params.max_rate  = filters.max_rate
-    if (filters.availability)  params.availability  = filters.availability
+    if (filters.q)                      params.q             = filters.q
+    if (filters.skills)                 params.skills        = filters.skills
+    if (filters.min_rate != null)       params.min_rate      = filters.min_rate
+    if (filters.max_rate != null)       params.max_rate      = filters.max_rate
+    if (filters.availability)           params.availability  = filters.availability
     if (filters.min_reputation != null) params.min_reputation = filters.min_reputation
-    if (filters.verified_only) params.verified_only = true
-    if (filters.page)          params.page          = filters.page
-    if (filters.per_page)      params.per_page      = filters.per_page
+    if (filters.verified_only)          params.verified_only = true
+    if (filters.page)                   params.page          = filters.page
+    if (filters.per_page)               params.per_page      = filters.per_page
     return api.get('/freelancers', { params }).then(r => r.data)
   },
 

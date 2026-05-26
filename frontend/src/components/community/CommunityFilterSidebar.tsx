@@ -4,19 +4,21 @@
  * Filters: skills, hourly rate range, availability, reputation minimum, verified-only toggle.
  */
 import { useState, useCallback } from 'react'
-import { Search, X, SlidersHorizontal } from 'lucide-react'
+import { X, SlidersHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { FreelancerFilters } from '@/api/community'
+import type { FreelancerFilters, AvailabilityStatus } from '@/api/community'
 
 const SKILL_SUGGESTIONS = [
   'React', 'TypeScript', 'Python', 'Node.js', 'SQL',
   'Docker', 'GraphQL', 'Vue', 'Go', 'Rust', 'AWS', 'Design',
 ]
 
-const AVAILABILITY_OPTIONS = [
-  { value: 'full_time', label: 'Full-time' },
-  { value: 'part_time', label: 'Part-time' },
-  { value: 'contract',  label: 'Contract'  },
+// FIX: values now match the backend AvailabilityStatus enum exactly
+//      (was: 'full_time' | 'part_time' | 'contract')
+const AVAILABILITY_OPTIONS: { value: AvailabilityStatus; label: string }[] = [
+  { value: 'available',     label: 'Available'     },
+  { value: 'busy',          label: 'Busy'          },
+  { value: 'not_available', label: 'Not Available' },
 ]
 
 interface Props {
@@ -95,7 +97,6 @@ export function CommunityFilterSidebar({ value, onChange, onReset }: Props) {
           </button>
         </div>
 
-        {/* Active skill chips */}
         {currentSkills.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
             {currentSkills.map(s => (
@@ -112,17 +113,19 @@ export function CommunityFilterSidebar({ value, onChange, onReset }: Props) {
           </div>
         )}
 
-        {/* Quick suggestions */}
         <div className="flex flex-wrap gap-1">
-          {SKILL_SUGGESTIONS.filter(s => !currentSkills.map(c => c.toLowerCase()).includes(s.toLowerCase())).slice(0, 8).map(s => (
-            <button
-              key={s}
-              onClick={() => addSkill(s)}
-              className="text-[11px] bg-white/5 border border-white/8 rounded-full px-2 py-0.5 text-muted-foreground hover:text-foreground hover:border-white/15 transition-colors"
-            >
-              {s}
-            </button>
-          ))}
+          {SKILL_SUGGESTIONS
+            .filter(s => !currentSkills.map(c => c.toLowerCase()).includes(s.toLowerCase()))
+            .slice(0, 8)
+            .map(s => (
+              <button
+                key={s}
+                onClick={() => addSkill(s)}
+                className="text-[11px] bg-white/5 border border-white/8 rounded-full px-2 py-0.5 text-muted-foreground hover:text-foreground hover:border-white/15 transition-colors"
+              >
+                {s}
+              </button>
+            ))}
         </div>
       </section>
 
