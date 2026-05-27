@@ -2,30 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
 @layer base {
   :root {
-    --background: 240 10% 4%;
-    --foreground: 240 5% 96%;
-    --card: 240 8% 8%;
-    --card-foreground: 240 5% 96%;
-    --popover: 240 8% 8%;
-    --popover-foreground: 240 5% 96%;
-    --primary: 263 70% 63%;
-    --primary-foreground: 240 5% 96%;
-    --secondary: 240 6% 14%;
-    --secondary-foreground: 240 5% 75%;
-    --muted: 240 6% 14%;
-    --muted-foreground: 240 4% 52%;
-    --accent: 240 6% 14%;
-    --accent-foreground: 240 5% 96%;
+    --background: 24 15% 6%;
+    --foreground: 36 25% 92%;
+    --card: 24 12% 9%;
+    --card-foreground: 36 25% 92%;
+    --popover: 24 12% 9%;
+    --popover-foreground: 36 25% 92%;
+    --primary: 38 95% 55%;
+    --primary-foreground: 24 15% 6%;
+    --secondary: 24 10% 14%;
+    --secondary-foreground: 36 15% 65%;
+    --muted: 24 10% 13%;
+    --muted-foreground: 36 10% 50%;
+    --accent: 24 10% 14%;
+    --accent-foreground: 36 25% 92%;
     --destructive: 0 72% 51%;
-    --destructive-foreground: 240 5% 96%;
-    --border: 240 6% 16%;
-    --input: 240 6% 16%;
-    --ring: 263 70% 63%;
-    --radius: 0.75rem;
+    --destructive-foreground: 36 25% 92%;
+    --border: 24 10% 16%;
+    --input: 24 10% 16%;
+    --ring: 38 95% 55%;
+    --radius: 0.5rem;
 
-    /* Semantic */
     --success: 142 76% 36%;
     --warning: 38 92% 50%;
     --info: 213 94% 68%;
@@ -33,48 +34,45 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
   body {
     @apply bg-background text-foreground;
+    font-family: 'DM Sans', system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Syne', system-ui, sans-serif;
   }
-  ::-webkit-scrollbar-track {
-    @apply bg-surface-1;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-surface-4 rounded-full;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-brand-400;
-  }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: hsl(24 12% 9%); }
+  ::-webkit-scrollbar-thumb { background: hsl(24 10% 22%); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(38 95% 55% / 0.6); }
 }
 
 @layer components {
-  /* Glassmorphism card */
-  .glass {
-    @apply bg-surface-2/60 backdrop-blur-xl border border-white/[0.06] shadow-glass;
+  .card-warm {
+    @apply bg-card border border-border rounded-lg;
   }
 
-  /* Gradient text */
   .gradient-text {
-    @apply bg-gradient-brand bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-amber-400 via-orange-400 to-amber-300 bg-clip-text text-transparent;
   }
 
-  /* Glow effect on focus/hover */
-  .glow-hover {
-    @apply transition-shadow duration-300 hover:shadow-glow-sm;
+  .btn-primary {
+    @apply bg-amber-500 hover:bg-amber-400 text-stone-950 font-semibold rounded-md px-5 py-2.5 text-sm transition-all duration-150;
   }
 
-  /* Premium input */
-  .input-premium {
-    @apply bg-surface-2 border border-white/[0.08] rounded-lg px-4 py-2.5 text-sm
-           focus:outline-none focus:ring-2 focus:ring-brand-400/50 focus:border-brand-400/50
-           placeholder:text-muted-foreground transition-all duration-200;
+  .btn-ghost {
+    @apply border border-white/10 hover:border-white/20 hover:bg-white/[0.03] text-muted-foreground hover:text-foreground rounded-md px-5 py-2.5 text-sm transition-all duration-150;
+  }
+
+  .input-warm {
+    @apply bg-secondary border border-border rounded-md px-4 py-2.5 text-sm
+           focus:outline-none focus:ring-1 focus:ring-amber-500/50 focus:border-amber-500/40
+           placeholder:text-muted-foreground transition-all duration-150;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border;
   }
 }
